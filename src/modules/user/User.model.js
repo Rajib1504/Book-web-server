@@ -33,7 +33,7 @@ const userSchema = new Schema(
     profilePhoto: { type: String },
     plan: {
       type: String,
-      enum: ["free", "lite", "pro"],
+      enum: ["free", "pro"],
       default: "free",
     },
     // Amra pore ei 'planStartDate' field-ta use korbo apnar 3-month logic-er jonno

@@ -6,7 +6,7 @@ const sendError = (res, statusCode, message) => {
 // create book
 export const CreateBook = async (req, res) => {
   try {
-    const newBook = await Book.CreateBook(req.body);
+    const newBook = await Book.create(req.body);
     res.status(201).json({
       success: true,
       message: "book created successfully",
@@ -81,13 +81,13 @@ export const getBookDetails = async (req, res) => {
 export const getRelatedBooks = async (req, res) => {
   try {
     const { category, currentBookId } = req.params;
-    
+
     const relatedBooks = await Book.find({
       category: category,
       _id: { $ne: currentBookId }, // accpt this book another books will be visible
     })
-    .limit(4) // max 4 books will be visible
-    .select("title cover_image category subtitle"); // only need filed we will take
+      .limit(4) // max 4 books will be visible
+      .select("title cover_image category subtitle"); // only need filed we will take
 
     res.status(200).json({ success: true, data: relatedBooks });
   } catch (error) {
@@ -101,7 +101,9 @@ export const deleteBook = async (req, res) => {
     if (!book) return sendError(res, 404, "Book not found");
 
     await book.deleteOne();
-    res.status(200).json({ success: true, message: "Book deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Book deleted successfully" });
   } catch (error) {
     sendError(res, 500, error.message);
   }

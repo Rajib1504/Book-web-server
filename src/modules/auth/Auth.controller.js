@@ -96,3 +96,16 @@ export const loginUser = async (req, res) => {
     sendError(res, 500, error.message);
   }
 };
+
+export const requirePro = (req, res, next) => {
+  // Allow access if user is 'pro' OR if user is 'admin'
+  if (req.user && (req.user.plan === "pro" || req.user.role === "admin")) {
+    next();
+  } else {
+    return sendError(
+      res,
+      403,
+      "Access denied. You need a PRO plan to access the library."
+    );
+  }
+};

@@ -1,8 +1,25 @@
 import { Router } from "express";
-import { admin, protect } from "./../../middlewares/auth.middleware";
-import { CreateBook } from "./Books.controller";
+import {
+  createBook,
+  getAllBooks,
+  getBookDetails,
+  getRelatedBooks,
+  deleteBook,
+} from "./Books.controller.js";
+import { protect, admin } from "../../middlewares/auth.middleware.js";
+import { requirePro } from "../auth/Auth.controller.js";
 
 export const BookRouter = Router();
 
-BookRouter.post("/createBook", protect, admin, CreateBook);
+//  all books and filters
+BookRouter.get("/", protect,requirePro, getAllBooks);
 
+//  detaisl
+BookRouter.get("/:id", protect,requirePro, getBookDetails);
+
+//related
+BookRouter.get("/related/:category/:currentBookId", protect,requirePro, getRelatedBooks);
+
+BookRouter.post("/", protect, admin, createBook);
+
+BookRouter.delete("/:id", protect, admin, deleteBook);
