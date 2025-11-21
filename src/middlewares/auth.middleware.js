@@ -1,10 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../modules/user/User.model.js";
+import { SendError } from "../utils/SendError.js";
 
-// Utility function to handle errors
-const sendError = (res, statusCode, message) => {
-  return res.status(statusCode).json({ success: false, message });
-};
 
 // --- 1. Shudhu Logged-in kina check korar middleware ---
 export const protect = async (req, res, next) => {
@@ -27,18 +24,18 @@ export const protect = async (req, res, next) => {
       req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) {
-        return sendError(res, 401, "User not found, token failed");
+        return SendError(res, 401, "User not found, token failed");
       }
 
       next(); // Sob thik thakle porer step-e jabe
     } catch (error) {
       console.error(error);
-      return sendError(res, 401, "Not authorized, token failed");
+      return SendError(res, 401, "Not authorized, token failed");
     }
   }
 
   if (!token) {
-    return sendError(res, 401, "Not authorized, no token");
+    return SendError(res, 401, "Not authorized, no token");
   }
 };
 
@@ -47,6 +44,18 @@ export const admin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next(); // User jodi admin hoy, porer step-e jabe
   } else {
-    return sendError(res, 403, "Not authorized as an admin");
+    return SendError(res, 403, "Not authorized as an admin");
+  }
+};
+export const requirePro = (req, res, next) => {
+  // Allow access if user is 'pro' OR if user is 'admin'
+  if (req.user && (req.user.plan === "pro" || req.user.role === "admin")) {
+    next();
+  } else {
+    return SendError(
+      res,
+      403,
+      "Access denied. You need a PRO plan to access the library."
+    );
   }
 };

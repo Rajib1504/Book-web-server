@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { Userrouter } from "./modules/user/User.routes.js";
 import { Authrouter } from "./modules/auth/Auth.routes.js"; // <-- Notun import
 import { BookRouter } from "./modules/books/Books.routes.js";
@@ -8,6 +9,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use("/api/auth", Authrouter); 
 app.use("/api/users", Userrouter);

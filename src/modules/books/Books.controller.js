@@ -1,10 +1,11 @@
-import { Book } from "./Books.model";
-const sendError = (res, statusCode, message) => {
-  return res.status(statusCode).json({ success: false, message });
-};
+import { SendError } from "../../utils/SendError.js";
+import { Book } from './Books.model.js';
+// const sendError = (res, statusCode, message) => {
+//   return res.status(statusCode).json({ success: false, message });
+// };
 
 // create book
-export const CreateBook = async (req, res) => {
+export const createBook = async (req, res) => {
   try {
     const newBook = await Book.create(req.body);
     res.status(201).json({
@@ -14,9 +15,9 @@ export const CreateBook = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 10000) {
-      return sendError(res, 400, "A book with this title already exists.");
+      return SendError(res, 400, "A book with this title already exists.");
     }
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
@@ -62,7 +63,7 @@ export const getAllBooks = async (req, res) => {
       data: books,
     });
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
@@ -70,11 +71,11 @@ export const getBookDetails = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
     if (!book) {
-      return sendError(res, 404, "Book not found");
+      return SendError(res, 404, "Book not found");
     }
     res.status(200).json({ success: true, data: book });
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
@@ -91,20 +92,44 @@ export const getRelatedBooks = async (req, res) => {
 
     res.status(200).json({ success: true, data: relatedBooks });
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
 export const deleteBook = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
-    if (!book) return sendError(res, 404, "Book not found");
+    if (!book) return SendError(res, 404, "Book not found");
 
     await book.deleteOne();
     res
       .status(200)
       .json({ success: true, message: "Book deleted successfully" });
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
+  }
+};
+
+export const updateBook = async (req, res) => {
+  try {
+    let book = await Book.findById(req.params.id);
+
+    if (!book) {
+      return SendError(res, 404, "Book not found");
+    }
+
+    // Update logic
+    book = await Book.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Book updated successfully",
+      data: book,
+    });
+  } catch (error) {
+    SendError(res, 500, error.message);
   }
 };

@@ -1,10 +1,8 @@
+import { SendError } from "../../utils/SendError.js";
 import { User } from "../user/User.model.js";
 import jwt from "jsonwebtoken";
 
-// Utility function to handle errors
-const sendError = (res, statusCode, message) => {
-  return res.status(statusCode).json({ success: false, message });
-};
+
 
 // --- Token Generate korar function ---
 const generateToken = (id, role) => {
@@ -22,7 +20,7 @@ export const registerUser = async (req, res) => {
     // Check korchi user agei register koreche kina
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return sendError(res, 400, "User already exists with this email");
+      return SendError(res, 400, "User already exists with this email");
     }
 
     // Notun user create korchi
@@ -50,10 +48,10 @@ export const registerUser = async (req, res) => {
         },
       });
     } else {
-      return sendError(res, 400, "Invalid user data");
+      return SendError(res, 400, "Invalid user data");
     }
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
@@ -68,14 +66,14 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return sendError(res, 401, "Invalid email or password");
+      return SendError(res, 401, "Invalid email or password");
     }
 
     // User.model.js-e banano 'isPasswordCorrect' method-ta use korchi
     const isMatch = await user.isPasswordCorrect(password);
 
     if (!isMatch) {
-      return sendError(res, 401, "Invalid email or password");
+      return SendError(res, 401, "Invalid email or password");
     }
 
     // Sob thik thakle token generate korchi
@@ -93,19 +91,8 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    sendError(res, 500, error.message);
+    SendError(res, 500, error.message);
   }
 };
 
-export const requirePro = (req, res, next) => {
-  // Allow access if user is 'pro' OR if user is 'admin'
-  if (req.user && (req.user.plan === "pro" || req.user.role === "admin")) {
-    next();
-  } else {
-    return sendError(
-      res,
-      403,
-      "Access denied. You need a PRO plan to access the library."
-    );
-  }
-};
+
