@@ -48,8 +48,14 @@ const userSchema = new Schema(
     license: {
       key: { type: String }, //unique key
       fileUrl: { type: String }, //download link
-      issueDate:{type:Date}
+      issueDate: { type: Date },
     },
+    savedBooks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Book", // connection with Book model 
+      },
+    ],
   },
   {
     timestamps: true,

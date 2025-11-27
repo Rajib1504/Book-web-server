@@ -171,3 +171,72 @@ export const updateUserPlan = async (req, res) => {
     SendError(res, 500, error.message);
   }
 };
+
+// ... আগের ইম্পোর্ট এবং ফাংশনগুলো ...
+
+// --- 4. Toggle Book Save (Save / Unsave) ---
+export const toggleBookSave = async (req, res) => {
+  try {
+    const { bookId } = req.body; // ফ্রন্টএন্ড থেকে বইয়ের ID আসবে
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return SendError(res, 404, "User not found");
+    }
+
+    // চেক করি বইটি অলরেডি সেভ করা আছে কিনা
+    // (MongoDB তে ObjectId অবজেক্ট হিসেবে থাকে, তাই string এ কনভার্ট করে চেক করতে হয়)
+    const isSaved = user.savedBooks.some(id => id.toString() === bookId);
+
+    if (isSaved) {
+      // যদি থাকে, রিমুভ করো (Unsave)
+      user.savedBooks = user.savedBooks.filter(
+        (id) => id.toString() !== bookId
+      );
+      await user.save();
+      res.status(200).json({
+        success: true,
+        message: "Book removed from saved list",
+        isSaved: false,
+      });
+    } else {
+      // না থাকলে, অ্যাড করো (Save)
+      user.savedBooks.push(bookId);
+      await user.save();
+      res.status(200).json({
+        success: true,
+        message: "Book saved successfully",
+        isSaved: true,
+      });
+    }
+  } catch (error) {
+    SendError(res, 500, error.message);
+  }
+};
+
+// --- 5. Get All Saved Books ---
+export const getSavedBooks = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // savedBooks অ্যারেতে শুধু ID আছে, .populate() দিয়ে আমরা পুরো বইয়ের তথ্য আনব
+    const user = await User.findById(userId).populate({
+      path: "savedBooks",
+      select: "title category cover_image subtitle", // শুধু প্রয়োজনীয় তথ্যগুলো আনছি
+    });
+
+    if (!user) {
+      return SendError(res, 404, "User not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.savedBooks.length,
+      data: user.savedBooks,
+    });
+  } catch (error) {
+    SendError(res, 500, error.message);
+  }
+};

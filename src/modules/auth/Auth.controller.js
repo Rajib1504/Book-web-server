@@ -2,8 +2,6 @@ import { SendError } from "../../utils/SendError.js";
 import { User } from "../user/User.model.js";
 import jwt from "jsonwebtoken";
 
-
-
 // --- Token Generate korar function ---
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -35,7 +33,7 @@ export const registerUser = async (req, res) => {
     if (user) {
       // Register korar sathe sathe login koranor jonno token generate korchi
       const token = generateToken(user._id, user.role);
-
+      // console.log(user);
       res.status(201).json({
         success: true,
         message: "User registered successfully!",
@@ -45,6 +43,8 @@ export const registerUser = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          plan: user.plan,
+          license: user.license,
         },
       });
     } else {
@@ -88,11 +88,11 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        plan: user.plan,
+        license: user.license,
       },
     });
   } catch (error) {
     SendError(res, 500, error.message);
   }
 };
-
-
